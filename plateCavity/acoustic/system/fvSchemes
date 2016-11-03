@@ -1,0 +1,64 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.3                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           dictionary;
+    object          fvSchemes;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+// for normal incidence b. c.
+// Euler, CrankNicholson, backward
+    default none;
+    ddt(phi)        Euler;
+}
+
+d2dt2Schemes
+{
+// the only choice is Euler
+    default none;
+    d2dt2(phi)      Euler;
+}
+
+gradSchemes
+{
+    default         none;
+    grad(phi)       Gauss linear;
+    grad(phi_0)       Gauss linear;
+    snGradCorr(phi) Gauss linear;
+}
+
+divSchemes
+{
+    default         none;
+}
+
+laplacianSchemes
+{
+// Gauss <interpolationScheme> <discretizationScheme>
+// interpolationScheme: linear, cubic, ...
+// discretizationScheme: corrected, uncorrected, limited
+    default none;
+//    laplacian(phi)  Gauss cubic corrected;
+//    laplacian(phi_0)  Gauss cubic corrected;
+    laplacian(phi)  Gauss linear uncorrected;
+    laplacian(phi_0)  Gauss linear uncorrected;
+}
+
+fluxRequired
+{
+    default no;
+}
+
+// ************************************************************************* //
