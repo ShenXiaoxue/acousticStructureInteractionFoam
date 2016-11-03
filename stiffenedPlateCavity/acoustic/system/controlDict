@@ -1,0 +1,68 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.1                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     acousticStrutureInteractionFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         0.04;
+
+deltaT          0.000001;
+
+writeControl    timeStep;
+
+writeInterval   20;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression compressed;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep    no;
+
+maxCo             0.5;
+
+/*
+functions
+{
+    ChangePhi_0
+    {
+        type  manipulateField;
+        outputControl   timeStep;
+        outputInterval  1;
+        fieldName phi_0;
+//        expression  "-deltaT()/(1.205*2*pi*200)* cos(2*200*pi * time())" ;
+        expression  " -deltaT()/(1.205*2*pi*200)* cos(2*200*pi * time())";
+        mask  "rdist(vector(0.57, 0.75,-0.5)) <= 0.1" ;
+        writeManipulated true;
+    }  
+}
+*/
+libs ("libfoam.so" "libconvectiveOutlet.so" "libgroovyBC.so" "libsimpleFunctionObjects.so" "libswakFunctionObjects.so" "libsimpleSwakFunctionObjects.so" "libsimpleLagrangianFunctionObjects.so" );
+// ************************************************************************* //

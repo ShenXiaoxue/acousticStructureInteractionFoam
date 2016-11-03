@@ -1,0 +1,75 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.1                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      phi;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 2 -1 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    sphere_region0
+    {
+        type            groovyBC;
+//	valueExpression "(time()>0) ? (phi@Inlet = phi@Inlet + 1/1.205*2*cos(2*200*pi*time())) : (2e-05/1.205*2)";
+	variables	"phi_face{sphere_region0}=phi;";
+	valueExpression "(time()>0) ? (phi_face + 1e-06/1.205*100*sin(2*200*pi*time())) : 0";  //monopolar source, r=0.01m
+        value           uniform 0;              //3.319502074688797e-05
+        gradientExpression "0";       //-1/1.205*2   *cos(2*200*pi*time())
+    }
+    consoleAcoustic
+    {
+        type            vibrationInducedPressure;
+        gradient        uniform 0;
+        displacement    uniform ( 0 0 0 );
+        updateValue     0;
+        writeValue      1;
+        value           uniform 0;
+    }
+    emission
+    {
+        type            convectiveOutlet;
+        gradient        uniform 0;
+        snGradScheme    normal;
+        ddtScheme       CrankNicholson;
+        updateValue     0;
+        writeValue      1;
+        convectiveVelocity uniform 136792;
+        value           uniform 0;
+    }
+    reception
+    {
+        type            convectiveOutlet;
+        gradient        uniform 0;
+        snGradScheme    normal;
+        ddtScheme       CrankNicholson;
+        updateValue     0;
+        writeValue      1;
+        convectiveVelocity uniform 343.7;
+        value           uniform 0;
+    }
+    symmetry1
+    {
+        type            symmetryPlane;
+    }
+    symmetry2
+    {
+        type            symmetryPlane;
+    }
+}
+
+
+// ************************************************************************* //

@@ -1,0 +1,2 @@
+if you want to simply run this case, you can copy "origin mesh/polyMesh" to "acoustic/constant/polyMesh" directly, and just run "Allrun"
+Or, you can use blockMesh, cellSet, refimeMesh, snappyHexMesh to generate this mesh.
