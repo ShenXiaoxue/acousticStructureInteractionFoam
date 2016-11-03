@@ -1,0 +1,154 @@
+/*---------------------------------------------------------------------------*\
+README for the convevtiveOutlet b. c. code
+
+Takuya OSHIMA <oshima@eng.niigata-u.ac.jp>
+05/Sep/2007 Added OF 1.4.1 support and fixed uninitialized internal variables
+09/Feb/2007 Added "CrankNicholson" ddtScheme
+07/Feb/2007 Added "normal" snGradScheme
+29/Jan/2007 The first release
+
+Supported OpenFOAM versions: 1.3, 1.4, 1.4.1
+\*---------------------------------------------------------------------------*/
+
+DESCRIPTION
+
+  This code implements a convective boundary condition
+	d(phi)/dt + Un(d(phi)/dn) = 0
+where phi, Un and d/dn represent any dependent variable, boundary-
+normal component of convective velocity and the boundary-normal
+gradient respectively.
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+FOR QUICK-STARTERS
+
+INSTALL:
+
+  Run "wmake libso" as usual. Then, OF <= 1.4 users should link the
+created libconvectiveOutlet.so to libfoamUser.so, or OF >= 1.4.1 users
+should add the entry
+libs ("libconvectiveOutlet.so");
+into controlDict.
+
+USAGE:
+
+  Write the initial field file (0/U etc.) as the following example.
+
+boundaryField
+{
+    outlet
+    {
+        type            convectiveOutlet;
+// convectiveVelocity: the boundary-normal component of convective velocity
+// (Un in the equation above)
+        convectiveVelocity uniform 343.704;
+    }
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+NOTES
+
+1. This code does not take care of mass conservation of the entire
+computational domain (in calculating the boundary value of U for
+example) simply because I don't need it in my calculation (linear
+acoustics). In my past experience in CFD (not using OpenFOAM),
+however, the conservation was "autonomously" achieved in most cases.
+
+2. Since this code is written solely for my own use it offers
+selections of temporal and boundary-normal gradient differencing
+schemes within boundaryField patch description, which are somewhat
+unusual for OpenFOAM b. c. codes. Especially be careful that the
+selection of temporal differencing scheme is done within boundaryField
+descriptions, and not within the system/fvSchemes::ddtSchemes
+subdictionary. This is quite a different behaviour from such as
+waveTransmissive b. c. This is because 1) I have no ddt term (have
+only a d2dt2 term) in my solver so I felt selecting within the
+ddtSchemes subdictionary was quite confusing, and 2) I liked to
+experiment the effect of temporal differencing schemes in the
+b. c. code independently from the solver code itself. For selecting
+the schemes see usage below.
+
+3. The default selections of the schemes (normal and CrankNicholson for
+snGradScheme and ddtScheme) are optimal for linear acoustics (where at
+most 50 timesteps will be spent for one cycle of typical field
+fluctuation, contrary to at least some hundred timesteps in usual
+unsteady CFD). In CFD cases I think the good starting point for
+ddtScheme depends on your ddtSchemes selection of the governing
+equation. Try and find out the optimal setting by yourself.
+
+4. Please don't blame me if the code doesn't do the job for you because
+I currently don't do any CFD using OpenFOAM and can't cover the great
+variety of flowfields. Propose me a fix (or preferably a patch)
+instead. Thanks for your cooperation.
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+DETAILED USAGE
+
+1. Write the initial field file (0/U etc.) following the example
+below. You must at least specify the type and the convectiveVelocity
+entries.
+
+2. For best results it is recommended to modify your solver code so
+that the code uses the newest patch-internal values within each
+timestep (by adding U.boundaryField().updateCoeffs() for example after
+the solution in each timestep is obtained). This is mandatory in
+linear acoustics but in CFD I think the b. c. code reasonably works
+without modification (because of the same reason as 3. of the notes
+above). Try and find out by yourself.
+
+boundaryField
+{
+    outlet
+    {
+        type            convectiveOutlet;
+
+// [gradient] (optional)
+// default = uniform 0
+// initial boundary-normal gradient
+        gradient        uniform 0;
+
+// [convectiveVelocity]
+// default = none
+// the boundary-normal component of convective velocity
+// (Un in the equation above)
+        convectiveVelocity uniform 343.704;
+
+// [snGradScheme] (optional)
+// default = normal
+// normal: uses the scheme which the author thinks is the most reasonable for
+//        most cases. The other two selections below are for backward
+//        compatibility and for cases where the normal scheme doesn't work.
+// upwind: uses patchInternalField value in calculating
+//        surface-normal gradient instead of using one on the boundary
+// predictorCorrector: corrects the surface-normal gradient calculated
+//        by upwind scheme to the one on the boundary using a
+//        predictor-corrector technique
+        snGradScheme    normal;
+
+// [ddtScheme] (optional)
+// default = CrankNicholson
+// Euler: calculates the time derivative by Euler implicit scheme
+//        (Eq. 2.21 of the Programmer's Guide)
+// backward: calculates the time derivative by backward differencing scheme
+//        (Eq. 2.22 of the Programmer's Guide)
+// CrankNicholson: calculates the time derivative by Crank Nicholson scheme
+        ddtScheme       Euler;
+
+// [updateValue] (optional)
+// default = 0
+// 1: updates boundary value within the b. c. code. OpenFOAM
+//        automatically handles the updating of the boundary value thus
+//        you usually need not turn this on.
+        updateValue     0;
+
+// [writeValue] (optional)
+// default = 0
+// 1: writes boundary value into the field data file of each time step
+//        (1/U, 2/U etc).
+        writeValue      0;
+    }
+}
+
+// ************************************************************************* //

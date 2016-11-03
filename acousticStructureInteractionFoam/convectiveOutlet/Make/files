@@ -1,0 +1,3 @@
+convectiveOutletFvPatchFields.C
+
+LIB = $(FOAM_USER_LIBBIN)/libconvectiveOutlet
